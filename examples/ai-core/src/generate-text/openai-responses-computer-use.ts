@@ -1,19 +1,7 @@
-import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenAI, openai } from '@ai-sdk/openai';
 import { Sandbox } from '@e2b/desktop';
 import { generateText } from 'ai';
 import 'dotenv/config';
-
-const openai = createOpenAI({
-  // example fetch wrapper that logs the input to the API call:
-  fetch: async (url, options) => {
-    // console.log('URL', url);
-    // console.log('Headers', JSON.stringify(options!.headers, null, 2));
-    console.log(
-      `Body ${JSON.stringify(JSON.parse(options!.body! as string), null, 2)}`,
-    );
-    return await fetch(url, options);
-  },
-});
 
 async function main() {
   const desktop = await Sandbox.create({
@@ -104,6 +92,7 @@ async function main() {
         }),
       },
       maxSteps: 5,
+      onStepFinish({ response }) {},
     });
 
     console.log('DONE');
