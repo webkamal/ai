@@ -1,4 +1,5 @@
 import {
+  InvalidArgumentError,
   LanguageModelV1,
   LanguageModelV1CallWarning,
   LanguageModelV1FinishReason,
