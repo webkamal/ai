@@ -151,8 +151,12 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
 
       // model-specific settings:
       ...(modelConfig.isReasoningModel &&
-        openaiOptions?.reasoningEffort != null && {
-          reasoning: { effort: openaiOptions?.reasoningEffort },
+        (openaiOptions?.reasoningEffort != null ||
+          openaiOptions?.reasoningSummary != null) && {
+          reasoning: {
+            effort: openaiOptions?.reasoningEffort,
+            generate_summary: openaiOptions?.reasoningSummary,
+          },
         }),
       ...(modelConfig.requiredAutoTruncation && {
         truncation: 'auto',
@@ -767,7 +771,8 @@ const providerOptionsSchema = z.object({
       previousResponseId: z.string().nullish(),
       store: z.boolean().nullish(),
       user: z.string().nullish(),
-      reasoningEffort: z.string().nullish(),
+      reasoningEffort: z.enum(['low', 'medium', 'high']).nullish(),
+      reasoningSummary: z.enum(['concise', 'detailed']).nullish(),
       strictSchemas: z.boolean().nullish(),
     })
     .nullish(),
@@ -781,9 +786,9 @@ type ResponsesModelConfig = {
 
 function getResponsesModelConfig(modelId: string): ResponsesModelConfig {
   // computer use preview model:
-  if (modelId === 'computer-use-preview-2025-02-04') {
+  if (modelId.startsWith('computer-use')) {
     return {
-      isReasoningModel: false,
+      isReasoningModel: true,
       systemMessageMode: 'system',
       requiredAutoTruncation: true,
     };

@@ -1,5 +1,5 @@
 export type OpenAIResponsesModelId =
-  | 'computer-use'
+  | 'computer-use-preview'
   | 'computer-use-preview-2025-02-04'
   | 'o1'
   | 'o1-2024-12-17'
