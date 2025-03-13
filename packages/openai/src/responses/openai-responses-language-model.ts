@@ -12,6 +12,7 @@ import {
   generateId,
   ParseResult,
   postJsonToApi,
+  safeValidateTypes,
 } from '@ai-sdk/provider-utils';
 import { z } from 'zod';
 import { OpenAIConfig } from '../openai-config';
@@ -99,8 +100,24 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
 
     warnings.push(...messageWarnings);
 
-    const isStrictJsonSchema =
-      providerMetadata?.openai?.strictJsonSchema ?? true;
+    // parse and validate provider options:
+    const parsedProviderOptions =
+      providerMetadata != null
+        ? safeValidateTypes({
+            value: providerMetadata,
+            schema: providerOptionsSchema,
+          })
+        : { success: true as const, value: undefined };
+    if (!parsedProviderOptions.success) {
+      throw new InvalidArgumentError({
+        argument: 'providerOptions',
+        message: 'invalid provider options',
+        cause: parsedProviderOptions.error,
+      });
+    }
+    const openaiOptions = parsedProviderOptions.value?.openai;
+
+    const isStrict = openaiOptions?.strictSchemas ?? true;
 
     const baseArgs = {
       model: this.modelId,
@@ -115,7 +132,7 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
             responseFormat.schema != null
               ? {
                   type: 'json_schema',
-                  strict: isStrictJsonSchema,
+                  strict: isStrict,
                   name: responseFormat.name ?? 'response',
                   description: responseFormat.description,
                   schema: responseFormat.schema,
@@ -125,16 +142,16 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
       }),
 
       // provider options:
-      metadata: providerMetadata?.openai?.metadata,
-      parallel_tool_calls: providerMetadata?.openai?.parallelToolCalls,
-      previous_response_id: providerMetadata?.openai?.previousResponseId,
-      store: providerMetadata?.openai?.store,
-      user: providerMetadata?.openai?.user,
+      metadata: openaiOptions?.metadata,
+      parallel_tool_calls: openaiOptions?.parallelToolCalls,
+      previous_response_id: openaiOptions?.previousResponseId,
+      store: openaiOptions?.store,
+      user: openaiOptions?.user,
 
       // model-specific settings:
       ...(modelConfig.isReasoningModel &&
-        providerMetadata?.openai?.reasoningEffort != null && {
-          reasoning: { effort: providerMetadata?.openai?.reasoningEffort },
+        openaiOptions?.reasoningEffort != null && {
+          reasoning: { effort: openaiOptions?.reasoningEffort },
         }),
       ...(modelConfig.requiredAutoTruncation && {
         truncation: 'auto',
@@ -167,7 +184,7 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
       case 'regular': {
         const { tools, tool_choice, toolWarnings } = prepareResponsesTools({
           mode,
-          strict: true,
+          strict: isStrict, // TODO support provider options on tools
         });
 
         return {
@@ -189,7 +206,7 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
                 mode.schema != null
                   ? {
                       type: 'json_schema',
-                      strict: isStrictJsonSchema,
+                      strict: isStrict,
                       name: mode.name ?? 'response',
                       description: mode.description,
                       schema: mode.schema,
@@ -212,7 +229,7 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
                 name: mode.tool.name,
                 description: mode.tool.description,
                 parameters: mode.tool.parameters,
-                strict: isStrictJsonSchema,
+                strict: isStrict,
               },
             ],
           },
@@ -349,8 +366,8 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
         completionTokens: response.usage.output_tokens,
       },
       rawCall: {
-        rawPrompt: body, // TODO
-        rawSettings: {}, // TODO
+        rawPrompt: undefined,
+        rawSettings: {},
       },
       rawResponse: {
         headers: responseHeaders,
@@ -429,10 +446,6 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
             }
 
             const value = chunk.value;
-
-            // TODO remove
-            // console.log(JSON.stringify(chunk.rawValue));
-            // return;
 
             if (isResponseOutputItemAddedChunk(value)) {
               if (value.item.type === 'function_call') {
@@ -532,8 +545,8 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
         }),
       ),
       rawCall: {
-        rawPrompt: body, // TODO
-        rawSettings: {}, // TODO
+        rawPrompt: undefined,
+        rawSettings: {},
       },
       rawResponse: { headers: responseHeaders },
       request: { body: JSON.stringify(body) },
@@ -744,6 +757,20 @@ function isResponseAnnotationAddedChunk(
 ): chunk is z.infer<typeof responseAnnotationAddedSchema> {
   return chunk.type === 'response.output_text.annotation.added';
 }
+
+const providerOptionsSchema = z.object({
+  openai: z
+    .object({
+      metadata: z.any().nullish(),
+      parallelToolCalls: z.boolean().nullish(),
+      previousResponseId: z.string().nullish(),
+      store: z.boolean().nullish(),
+      user: z.string().nullish(),
+      reasoningEffort: z.string().nullish(),
+      strictSchemas: z.boolean().nullish(),
+    })
+    .nullish(),
+});
 
 type ResponsesModelConfig = {
   isReasoningModel: boolean;

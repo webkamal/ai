@@ -4,12 +4,12 @@ import {
   UnsupportedFunctionalityError,
 } from '@ai-sdk/provider';
 import { convertUint8ArrayToBase64 } from '@ai-sdk/provider-utils';
+import { z } from 'zod';
 import { OpenAIResponsesPrompt } from './openai-responses-api-types';
 import {
   computerActionSchema,
   computerSafetyCheckSchema,
 } from './openai-responses-language-model';
-import { z } from 'zod';
 
 export function convertToOpenAIResponsesMessages({
   prompt,

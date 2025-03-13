@@ -1035,6 +1035,41 @@ describe('doGenerate', () => {
         },
       ),
     );
+
+    it(
+      'should use dynamic retrieval for gemini-1-5',
+      withTestServer(
+        prepareJsonResponse({
+          url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+        }),
+        async ({ call }) => {
+          const geminiPro = provider.languageModel('gemini-1.5-flash', {
+            useSearchGrounding: true,
+            dynamicRetrievalConfig: {
+              mode: 'MODE_DYNAMIC',
+              dynamicThreshold: 1,
+            },
+          });
+
+          await geminiPro.doGenerate({
+            inputFormat: 'prompt',
+            mode: { type: 'regular' },
+            prompt: TEST_PROMPT,
+          });
+
+          expect(await call(0).getRequestBodyJson()).toMatchObject({
+            tools: {
+              googleSearchRetrieval: {
+                dynamicRetrievalConfig: {
+                  mode: 'MODE_DYNAMIC',
+                  dynamicThreshold: 1,
+                },
+              },
+            },
+          });
+        },
+      ),
+    );
   });
 });
 
@@ -1494,6 +1529,42 @@ describe('doStream', () => {
         },
       ),
     );
+
+    it(
+      'should use dynamic retrieval for gemini-1-5',
+      withTestServer(
+        prepareStreamResponse({
+          content: [''],
+          url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent',
+        }),
+        async ({ call }) => {
+          const geminiPro = provider.languageModel('gemini-1.5-flash', {
+            useSearchGrounding: true,
+            dynamicRetrievalConfig: {
+              mode: 'MODE_DYNAMIC',
+              dynamicThreshold: 1,
+            },
+          });
+
+          await geminiPro.doStream({
+            inputFormat: 'prompt',
+            mode: { type: 'regular' },
+            prompt: TEST_PROMPT,
+          });
+
+          expect(await call(0).getRequestBodyJson()).toMatchObject({
+            tools: {
+              googleSearchRetrieval: {
+                dynamicRetrievalConfig: {
+                  mode: 'MODE_DYNAMIC',
+                  dynamicThreshold: 1,
+                },
+              },
+            },
+          });
+        },
+      ),
+    );
   });
 
   it(
@@ -1533,6 +1604,84 @@ describe('doStream', () => {
             },
           },
         ]);
+      },
+    ),
+  );
+
+  it(
+    'should set finishReason to tool-calls when chunk contains functionCall',
+    withTestServer(
+      {
+        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:streamGenerateContent',
+        type: 'stream-values',
+        content: [
+          `data: ${JSON.stringify({
+            candidates: [
+              {
+                content: {
+                  parts: [{ text: 'Initial text response' }],
+                  role: 'model',
+                },
+                index: 0,
+                safetyRatings: SAFETY_RATINGS,
+              },
+            ],
+          })}\n\n`,
+          `data: ${JSON.stringify({
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    {
+                      functionCall: {
+                        name: 'test-tool',
+                        args: { value: 'example value' },
+                      },
+                    },
+                  ],
+                  role: 'model',
+                },
+                finishReason: 'STOP',
+                index: 0,
+                safetyRatings: SAFETY_RATINGS,
+              },
+            ],
+            usageMetadata: {
+              promptTokenCount: 10,
+              candidatesTokenCount: 20,
+              totalTokenCount: 30,
+            },
+          })}\n\n`,
+        ],
+      },
+      async () => {
+        const { stream } = await model.doStream({
+          inputFormat: 'prompt',
+          mode: {
+            type: 'regular',
+            tools: [
+              {
+                type: 'function',
+                name: 'test-tool',
+                parameters: {
+                  type: 'object',
+                  properties: { value: { type: 'string' } },
+                  required: ['value'],
+                  additionalProperties: false,
+                  $schema: 'http://json-schema.org/draft-07/schema#',
+                },
+              },
+            ],
+          },
+          prompt: TEST_PROMPT,
+        });
+
+        const events = await convertReadableStreamToArray(stream);
+        const finishEvent = events.find(event => event.type === 'finish');
+
+        expect(
+          finishEvent?.type === 'finish' && finishEvent.finishReason,
+        ).toEqual('tool-calls');
       },
     ),
   );

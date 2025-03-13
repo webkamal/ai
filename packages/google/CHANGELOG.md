@@ -1,5 +1,30 @@
 # @ai-sdk/google
 
+## 1.1.24
+
+### Patch Changes
+
+- 5261762: fix (provider/google): ensure correct finishReason for tool calls in streaming response
+
+## 1.1.23
+
+### Patch Changes
+
+- 413f5a7: feat (providers/google): add gemma 3 model id
+
+## 1.1.22
+
+### Patch Changes
+
+- 62f46fd: feat (provider/google): add support for dynamic retrieval
+
+## 1.1.21
+
+### Patch Changes
+
+- Updated dependencies [1531959]
+  - @ai-sdk/provider-utils@2.1.12
+
 ## 1.1.20
 
 ### Patch Changes

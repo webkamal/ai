@@ -1,5 +1,24 @@
 # @ai-sdk/openai
 
+## 1.2.4
+
+### Patch Changes
+
+- 523f128: feat (provider/openai): add strictSchemas option to responses model
+
+## 1.2.3
+
+### Patch Changes
+
+- Updated dependencies [1531959]
+  - @ai-sdk/provider-utils@2.1.12
+
+## 1.2.2
+
+### Patch Changes
+
+- e3a389e: feat (provider/openai): support responses api
+
 ## 1.2.1
 
 ### Patch Changes
