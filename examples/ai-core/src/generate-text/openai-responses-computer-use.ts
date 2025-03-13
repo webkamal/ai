@@ -92,7 +92,9 @@ async function main() {
         }),
       },
       maxSteps: 5,
-      onStepFinish({ response }) {},
+      onStepFinish({ response }) {
+        console.log('Response:', JSON.stringify(response.body, null, 2));
+      },
     });
 
     console.log('DONE');
