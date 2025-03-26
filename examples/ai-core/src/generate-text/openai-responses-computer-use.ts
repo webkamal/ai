@@ -1,4 +1,4 @@
-import { createOpenAI, openai } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai';
 import { Sandbox } from '@e2b/desktop';
 import { generateText } from 'ai';
 import 'dotenv/config';
