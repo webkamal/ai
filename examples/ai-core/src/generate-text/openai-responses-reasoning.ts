@@ -11,8 +11,6 @@ async function main() {
       openai: {
         reasoningEffort: 'medium',
         reasoningSummary: 'concise',
-      },
-        reasoningEffort: 'low',
       } satisfies OpenAIResponsesProviderOptions,
     },
   });
