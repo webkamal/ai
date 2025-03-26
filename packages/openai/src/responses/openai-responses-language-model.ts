@@ -136,6 +136,7 @@ export class OpenAIResponsesLanguageModel implements LanguageModelV1 {
       previous_response_id: openaiOptions?.previousResponseId,
       store: openaiOptions?.store,
       user: openaiOptions?.user,
+      instructions: openaiOptions?.instructions,
 
       // model-specific settings:
       ...(modelConfig.isReasoningModel &&
@@ -801,6 +802,7 @@ const openaiResponsesProviderOptionsSchema = z.object({
   strictSchemas: z.boolean().nullish(),
   reasoningEffort: z.enum(['low', 'medium', 'high']).nullish(),
   reasoningSummary: z.enum(['concise', 'detailed']).nullish(),
+  instructions: z.string().nullish(),
 });
 
 export type OpenAIResponsesProviderOptions = z.infer<
