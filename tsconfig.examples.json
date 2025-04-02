@@ -46,9 +46,6 @@
       "path": "examples/next-openai-upstash-rate-limits"
     },
     {
-      "path": "examples/next-openai"
-    },
-    {
       "path": "examples/node-http-server"
     },
     {
