@@ -8,12 +8,31 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "allowJs": true,
-    "noEmit": true,
     "strict": true,
-    "types": ["vinxi/types/client"],
+    "types": [
+      "vinxi/types/client"
+    ],
     "isolatedModules": true,
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": [
+        "./src/*"
+      ]
+    },
+    "skipLibCheck": true,
+    "composite": true
+  },
+  "references": [
+    {
+      "path": "../../packages/ai"
+    },
+    {
+      "path": "../../packages/openai"
+    },
+    {
+      "path": "../../packages/solid"
+    },
+    {
+      "path": "../../packages/ui-utils"
     }
-  }
+  ]
 }

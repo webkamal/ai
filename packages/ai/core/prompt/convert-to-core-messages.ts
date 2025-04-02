@@ -11,7 +11,7 @@ import {
   CoreMessage,
   ToolCallPart,
   ToolResultPart,
-} from '../prompt';
+} from '.';
 import { attachmentsToParts } from './attachments-to-parts';
 import { MessageConversionError } from './message-conversion-error';
 

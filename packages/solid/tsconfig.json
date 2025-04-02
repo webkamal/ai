@@ -1,14 +1,33 @@
 {
-  "extends": "./node_modules/@vercel/ai-tsconfig/react-library.json",
+  "extends": "./node_modules/@vercel/ai-tsconfig/ts-library.json",
   "compilerOptions": {
+    "composite": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "ESNext",
     "stripInternal": true,
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist"
   },
-  "include": ["."],
-  "exclude": ["*/dist", "dist", "build", "node_modules"]
+  "exclude": [
+    "dist",
+    "build",
+    "node_modules",
+    "tsup.config.ts"
+  ],
+  "references": [
+    {
+      "path": "../provider-utils"
+    },
+    {
+      "path": "../ui-utils"
+    }
+  ]
 }

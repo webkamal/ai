@@ -9,7 +9,7 @@ export default defineConfig([
   },
   {
     entry: ['src/test/index.ts'],
-    outDir: 'test/dist',
+    outDir: 'dist/test',
     format: ['cjs', 'esm'],
     external: ['vitest'],
     dts: true,
