@@ -21,6 +21,7 @@
     "skipLibCheck": true,
     "composite": true
   },
+  "exclude": ["postcss.config.cjs", "tailwind.config.cjs"],
   "references": [
     {
       "path": "../../packages/ai"

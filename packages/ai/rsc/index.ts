@@ -1,4 +1,4 @@
-export  {
+export {
   getAIState,
   getMutableAIState,
   createStreamableUI,
@@ -7,7 +7,7 @@ export  {
   createAI,
 } from './rsc-server';
 
-export  {
+export {
   readStreamableValue,
   useStreamableValue,
   useUIState,
